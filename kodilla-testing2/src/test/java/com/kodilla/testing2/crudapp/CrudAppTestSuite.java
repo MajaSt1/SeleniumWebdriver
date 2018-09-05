@@ -12,6 +12,8 @@ import org.openqa.selenium.support.ui.Select;
 import java.util.Random;
 import java.util.stream.Collectors;
 
+import static org.junit.Assert.assertEquals;
+
 public class CrudAppTestSuite {
     private static final String BASE_URL= "https://majast1.github.io/";
     private WebDriver driver;
@@ -44,20 +46,29 @@ public class CrudAppTestSuite {
         return taskname;
     }
 
-
     private void deleteCrudAppTestTask(String taskname) throws InterruptedException{
         driver.navigate().refresh();
 
-        while(!driver.findElement(By.xpath("//section[2]/div")).isDisplayed());
-
-       driver.findElements(By.xpath("//form[@class=\"datatable_row\"]")).stream()
-               .filter(findE-> findE.findElement(By.xpath(".//p[@class=\"datatable_field-value\"]"))
-                       .getText().equals(taskname))
-               .forEach(theForm->{
-                   WebElement deleteButton= theForm.findElement(By.xpath("//div/fieldset[1]/button[2]"));
-                   deleteButton.click();
-               });
         Thread.sleep(5000);
+
+        driver.findElements(By.xpath("//form[@class=\"datatable__row\"]")).stream()
+                .filter(findE-> findE.findElement(By.xpath(".//p[@class=\"datatable__field-value\"]"))
+                        .getText().equals(taskname))
+                .forEach(theForm->{
+                    WebElement deleteButton= theForm.findElement(By.xpath(".//button[@data-task-delete-button]"));
+                    deleteButton.click();
+                });
+        Thread.sleep(2000);
+
+        driver.navigate().refresh();
+
+        Thread.sleep(5000);
+
+        long foundTasks = driver.findElements(By.xpath("//form[@class=\"datatable__row\"]")).stream()
+                .filter(findE -> findE.findElement(By.xpath(".//p[@class=\"datatable__field-value\"]"))
+                        .getText().equals(taskname))
+                .count();
+        assertEquals(0, foundTasks);
     }
 
     private void sendTestTaskToTrello(String taskName) throws InterruptedException{
